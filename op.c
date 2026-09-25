@@ -37,3 +37,46 @@ uint8_t gf_inv(uint8_t x, struct GF_tables *tables) {
     return tables->exp[255 - tables->log[x]];
 }
 
+
+struct Array* gf_poly_add(struct Array *a, struct Array *b, struct GF_tables *tables) {
+    struct Array *res = (struct Array*) malloc(sizeof(struct Array));
+
+    size_t len = a->length > b->length ? a->length : b->length;
+    initZArray(res, len);
+
+    for(size_t i = 0; i < a->length; i ++) {
+        res->array[i + len - a->length] = a->array[i];
+    }
+
+    for(size_t i = 0; i < b->length; i ++) {
+        res->array[i + len - b->length] ^= b->array[i];
+    }
+    
+    return res;
+}
+
+struct Array* gf_poly_mul(struct Array *a, struct Array *b, struct GF_tables *tables) {
+    struct Array *res = (struct Array*) malloc(sizeof(struct Array));
+
+    size_t len = a->length + b->length;
+    initZArray(res, len);
+
+    for(size_t i = 0; i < a->length; i ++) {
+        for(size_t j = 0; j < b->length; j ++) {
+            res->array[i + j] ^= gf_mul(a->array[i], b->array[j], tables);
+        }
+    }
+
+    return res;
+}
+
+uint8_t gf_poly_eval(struct Array *a, uint8_t x, struct GF_tables *tables) {
+    uint8_t y = a->array[0];
+
+    for(size_t i = 0; i < a->length; i ++) {
+        y = gf_mul(y, x, tables) ^ a->array[i];
+    }
+    
+    return y;
+}
+
