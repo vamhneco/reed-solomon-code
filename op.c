@@ -39,10 +39,9 @@ uint8_t gf_inv(uint8_t x, struct GF_tables *tables) {
 
 
 struct Array* gf_poly_add(struct Array *a, struct Array *b, struct GF_tables *tables) {
-    struct Array *res = (struct Array*) malloc(sizeof(struct Array));
 
     size_t len = a->length > b->length ? a->length : b->length;
-    initZArray(res, len);
+    struct Array *res = newZArray(len);
 
     for(size_t i = 0; i < a->length; i ++) {
         res->array[i + len - a->length] = a->array[i];
@@ -56,10 +55,8 @@ struct Array* gf_poly_add(struct Array *a, struct Array *b, struct GF_tables *ta
 }
 
 struct Array* gf_poly_mul(struct Array *a, struct Array *b, struct GF_tables *tables) {
-    struct Array *res = (struct Array*) malloc(sizeof(struct Array));
-
-    size_t len = a->length + b->length;
-    initZArray(res, len);
+    size_t len = a->length + b->length - 1;
+    struct Array *res = newZArray(len);
 
     for(size_t i = 0; i < a->length; i ++) {
         for(size_t j = 0; j < b->length; j ++) {

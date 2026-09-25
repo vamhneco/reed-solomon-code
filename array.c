@@ -1,23 +1,29 @@
 #include "headers/array.h"
 
-void initArray(struct Array *a, size_t size) {
+struct Array* newArray(size_t size) {
+    struct Array *a = (struct Array*)malloc(sizeof(struct Array));
     a->array = (uint8_t*)malloc(size * sizeof(uint8_t));
     if(a->array == NULL) {
         freeArray(a);
         exit(EXIT_FAILURE);
     }
-    a->length = 0;
+    a->length = size;
     a->cap = size;
+
+    return a;
 } 
 
-void initZArray(struct Array *a, size_t size) {
+struct Array* newZArray(size_t size) {
+    struct Array *a = (struct Array*)malloc(sizeof(struct Array));
     a->array = (uint8_t*)calloc(size, sizeof(uint8_t));
     if(a->array == NULL) {
         freeArray(a);
         exit(EXIT_FAILURE);
     }
-    a->length = 0;
+    a->length = size;
     a->cap = size;
+
+    return a;
 }
 
 void extendArray(struct Array *a, size_t size) {
