@@ -1,6 +1,6 @@
-#include "headers/encoder.h"
-#include "headers/op.h"
-#include "headers/array.h"
+#include "encoder.h"
+#include "op.h"
+#include "array.h"
 
 #include <stdio.h>
 

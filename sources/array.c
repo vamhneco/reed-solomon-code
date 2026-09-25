@@ -1,4 +1,4 @@
-#include "headers/array.h"
+#include "array.h"
 
 struct Array* newArray(size_t size) {
     struct Array *a = (struct Array*)malloc(sizeof(struct Array));

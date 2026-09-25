@@ -1,7 +1,7 @@
 #include <stdio.h>
-#include "headers/encoder.h"
-#include "headers/op.h"
-#include "headers/array.h"
+#include "encoder.h"
+#include "op.h"
+#include "array.h"
 
 int main() {
 
@@ -13,6 +13,7 @@ int main() {
     for(size_t i = 0; i < gen->length; i ++) {
         printf("%x ", gen->array[i]);
     }
+    printf("\n");
 
     return 0;
 }
