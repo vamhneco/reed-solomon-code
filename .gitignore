@@ -57,4 +57,4 @@ dkms.conf
 #thing
 compile_commands.json
 testing.c
-input
+input*
