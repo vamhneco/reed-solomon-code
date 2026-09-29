@@ -26,16 +26,6 @@ struct Array* newZArray(size_t size) {
     return a;
 }
 
-void extendArray(struct Array *a, size_t size) {
-    if(a->cap >= size) return;
-    a->cap = a->cap << 1;
-
-    void *p = realloc(a->array, a->cap);
-    if(p == NULL) exit(EXIT_FAILURE);
-
-    a->array = p;
-}
-
 void freeArray(struct Array *a) {
     if(a->array != NULL) {
         free(a->array);
@@ -43,4 +33,6 @@ void freeArray(struct Array *a) {
     }
     a->length = 0;
     a->cap = 0;
+
+    free(a);
 }

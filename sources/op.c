@@ -21,23 +21,28 @@ struct GF_tables* init_tables() {
 }
 
 uint8_t gf_mul(uint8_t x, uint8_t y, struct GF_tables *tables) {
+    if(x == 0 || y == 0) return 0;
     return tables->exp[tables->log[x] + tables->log[y]];
 }
 
 uint8_t gf_div(uint8_t x, uint8_t y, struct GF_tables *tables) {
+    if(x == 0) return 0;
+    if(y == 0) exit(EXIT_FAILURE);
     return tables->exp[tables->log[x] + 255 - tables->log[y]];
 }
 
 uint8_t gf_pow(uint8_t x, uint16_t pow, struct GF_tables *tables) {
+    if(x == 0) return pow ? 0 : 1;
     return tables->exp[(pow * tables->log[x]) % 255];
 }
 
 
 uint8_t gf_inv(uint8_t x, struct GF_tables *tables) {
+    if(x == 0) exit(EXIT_FAILURE);
     return tables->exp[255 - tables->log[x]];
 }
 
-
+// TODO poly trim !
 struct Array* gf_poly_add(struct Array *a, struct Array *b, struct GF_tables *tables) {
 
     size_t len = a->length > b->length ? a->length : b->length;

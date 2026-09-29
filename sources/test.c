@@ -5,6 +5,8 @@
 #include "op.h"
 #include "array.h"
 #include <string.h>
+#include <stdlib.h>
+#include <time.h>
 
 void print_msg(struct Array *a) {
     for(size_t i = 0; i < a->length; i ++) {
@@ -13,41 +15,60 @@ void print_msg(struct Array *a) {
     printf("\n");
 }
 
-int main() {
+int getRandom(int l, int r) {
+    return rand() % (r - l + 1) + l;
+}
 
-    struct GF_tables *tables = init_tables();
-
-    struct Array *msg = newArray(16);
-    uint8_t a[] = {0x40, 0xd2, 0x75, 0x47, 0x76, 0x17, 0x32, 0x06,
-                   0x27, 0x26, 0x96, 0xc6, 0xc6, 0x96, 0x70, 0xec};
-
-    memcpy(msg->array, a, msg->length * sizeof(uint8_t));
-
-    struct Array *ecod_msg = rs_encode_msg(msg, 10, tables);
-
-     int n_e;
-     scanf("%d", &n_e);
-
-     struct Array *e_pos = newArray(n_e);
-     for(size_t i = 0; i < e_pos->length; i ++) {
-         int x; scanf("%d", &x);
-         e_pos->array[i] = (uint8_t)x;
-     }
+int test(struct Array *msg, int nsym, struct GF_tables *tables) {
+    struct Array *corrupted_msg = newArray(msg->length);
     
-    struct Array *cor_msg = rs_encode_msg(msg, 10, tables);
-    for(size_t i = 0; i < e_pos->length; i ++) {
-        cor_msg->array[e_pos->array[i]] ++;
+    struct Array *err_pos = newArray(255);
+    err_pos->length = 0;
+
+    for(size_t i = 0; i < msg->length; i ++) {
+        uint8_t err = (getRandom(1, 1000) <= 5) * getRandom(1, 255);
+        corrupted_msg->array[i] = msg->array[i] ^ err; 
+        
+        if(err != 0) err_pos->array[err_pos->length++] = i;
     }
 
-    struct Array *synd = rs_calc_syndromes(cor_msg, 10, tables);
-    struct Array *corrected = rs_correct_errata(cor_msg, synd, e_pos, tables);
+    if(err_pos->length == 0) return 1;   
+    if(err_pos->length > nsym) return -1;
 
-    print_msg(ecod_msg);
-    print_msg(cor_msg);
-    print_msg(synd);
-    print_msg(corrected);
+    struct Array *synd = rs_calc_syndromes(corrupted_msg, nsym, tables);
+    struct Array *corrected_msg = rs_correct_errata(corrupted_msg, synd, err_pos, tables);
 
+    for(size_t i = 0; i < msg->length; i ++) {
+        if(msg->array[i] != corrected_msg->array[i]) return 0;
+    }
+    return 1;
+}
 
+int main() {
+
+    srand(time(NULL));
+
+    struct GF_tables *tables = init_tables();
+    
+    size_t N = 214, nsym = 30;
+    struct Array *msg = newArray(N);
+    for(size_t i = 0; i < msg->length; i ++) msg->array[i] = getRandom(0, 255);
+
+    struct Array *encoded_msg = rs_encode_msg(msg, nsym, tables); 
+    
+    // test(encoded_msg, nsym, tables);
+    
+    int nTest = 100000;
+    for(int i = 1; i <= nTest; i ++) {
+        int x = test(encoded_msg, nsym, tables);
+        if(x == 0) {
+            printf("WAT DE HEOOOOOOOOOOO!\n");
+            exit(EXIT_FAILURE);
+        }
+        else printf("\rpass %d test!", i);
+    }
+
+    
     return 0;
 }
 

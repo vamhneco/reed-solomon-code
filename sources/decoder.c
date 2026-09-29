@@ -2,6 +2,7 @@
 #include "array.h"
 #include "op.h"
 #include <string.h>
+#include <assert.h>
 
 
 struct Array *rs_calc_syndromes(struct Array *msg, size_t nsym, struct GF_tables *tables) {
@@ -14,10 +15,9 @@ struct Array *rs_calc_syndromes(struct Array *msg, size_t nsym, struct GF_tables
     return synd;
 }
 
-int rs_check(struct Array *msg, size_t nsym, struct GF_tables *tables) {
-    struct Array *res = rs_calc_syndromes(msg, nsym, tables);
-    for(size_t i = 0; i < res->length; i ++) {
-        if(res->array[i] != 0) return 0; 
+int rs_check(struct Array *synd,  struct GF_tables *tables) {
+    for(size_t i = 0; i < synd->length; i ++) {
+        if(synd->array[i] != 0) return 0; 
     } 
     return 1;
 }
@@ -30,16 +30,22 @@ struct Array *rs_calc_errata_locator(struct Array *epos, struct GF_tables *table
     pol->array[1] = 1;
 
     for(size_t i = 0; i < epos->length; i ++) {
+        struct Array *old_eloc = eloc;
         pol->array[0] = gf_pow(2, epos->array[i], tables);
         eloc = gf_poly_mul(eloc, pol, tables);
+
+        freeArray(old_eloc);
     } 
 
+    freeArray(pol);
     return eloc;
 }
 
 struct Array *rs_calc_error_evaluator(struct Array *synd, struct Array *eloc, size_t nsym, struct GF_tables *tables) {
     struct Array *omega = gf_poly_mul(synd, eloc, tables);
     
+
+    assert(omega->length >= (nsym + 1));
     size_t pos = omega->length - (nsym + 1);
     memmove(omega->array, omega->array + pos, (nsym + 1) * sizeof(uint8_t));
 
@@ -85,5 +91,11 @@ struct Array *rs_correct_errata(struct Array *msg, struct Array *synd, struct Ar
         E->array[e_pos->array[i]] = y; 
     }    
 
-    return gf_poly_add(msg, E, tables);
+    struct Array *res = gf_poly_add(msg, E, tables);
+    freeArray(E);
+    freeArray(err_loc);
+    freeArray(err_eval);
+    freeArray(coef_pos);
+
+    return res;
 }
