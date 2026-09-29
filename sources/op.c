@@ -70,7 +70,7 @@ struct Array* gf_poly_mul(struct Array *a, struct Array *b, struct GF_tables *ta
 uint8_t gf_poly_eval(struct Array *a, uint8_t x, struct GF_tables *tables) {
     uint8_t y = a->array[0];
 
-    for(size_t i = 0; i < a->length; i ++) {
+    for(size_t i = 1; i < a->length; i ++) {
         y = gf_mul(y, x, tables) ^ a->array[i];
     }
     

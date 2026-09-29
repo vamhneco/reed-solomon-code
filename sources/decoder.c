@@ -43,7 +43,7 @@ struct Array *rs_calc_error_evaluator(struct Array *synd, struct Array *eloc, si
     size_t pos = omega->length - (nsym + 1);
     memmove(omega->array, omega->array + pos, (nsym + 1) * sizeof(uint8_t));
 
-    omega->length = nsym;
+    omega->length = nsym + 1;
 
     return omega;
 }
@@ -61,7 +61,29 @@ struct Array *rs_correct_errata(struct Array *msg, struct Array *synd, struct Ar
         X->array[i] = gf_pow(2, coef_pos->array[i], tables);
     }
 
-    // TODO 
+    struct Array *E = newZArray(msg->length);
 
+    size_t len = X->length;
+    for(size_t i = 0; i < len; i ++) {
+        uint8_t xi_inv = gf_inv(X->array[i], tables);
+        uint8_t err_loc_prime = 1;
+    
+        for(size_t j = 0; j < len; j ++) if(j != i) {
+            // err_loc_prime = product (1 - xi_inv * X[i])
+            err_loc_prime = gf_mul(err_loc_prime, 1 ^ gf_mul(xi_inv, X->array[j], tables), tables); 
+        }
 
+        // y = omega(xi_inv) / err_loc_prime
+
+        uint8_t y = gf_poly_eval(err_eval, xi_inv, tables);
+        y = gf_mul(y, X->array[i], tables); // need to cancel the padding of synd
+        
+        if(err_loc_prime == 0) exit(EXIT_FAILURE);
+
+        y = gf_div(y, err_loc_prime, tables);
+
+        E->array[e_pos->array[i]] = y; 
+    }    
+
+    return gf_poly_add(msg, E, tables);
 }
